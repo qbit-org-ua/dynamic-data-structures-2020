@@ -1,0 +1,169 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtext}
+\usepackage{mathtools}
+\usepackage[T1,T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{bm}
+\usepackage{cancel}
+\usepackage{proof}
+\usepackage{epigraph}
+\usepackage{titlesec}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{stmaryrd}
+\usepackage{cellspace}
+\usepackage{cmll}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{caption}
+\usepackage{wrapfig}
+\usepackage{minted}
+\usepackage{svg}
+
+\usepackage[hidelinks]{hyperref}
+
+\usepackage[russian]{babel}
+\selectlanguage{russian}
+
+\hypersetup{%
+    colorlinks=true,
+    linkcolor=blue
+}
+
+\DeclareMathOperator{\StudentId}{StudentId}
+\DeclareMathOperator{\StudentName}{StudentName}
+\DeclareMathOperator{\GroupId}{GroupId}
+\DeclareMathOperator{\GroupName}{GroupName}
+\DeclareMathOperator{\CourseId}{CourseId}
+\DeclareMathOperator{\CourseName}{CourseName}
+\DeclareMathOperator{\LecturerId}{LecturerId}
+\DeclareMathOperator{\LecturerName}{LecturerName}
+\DeclareMathOperator{\Mark}{Mark}
+
+\pagenumbering{gobble}
+
+\title{Теоретическое домашнее задание на бинарные деревья поиска}
+\author{}
+\date{\vspace{-5ex}}
+
+\begin{document}
+
+\usetikzlibrary{arrows.meta,positioning,matrix}
+
+\maketitle
+
+Для каждой вершины бинарного дерева поиска верно следующее: ключ, хранящийся в
+вершине, меньше ключей всех вершин левого поддерева вершины, и больше ключей
+всех вершин правого поддерева вершины.
+
+Рассмотрим такое бинарное дерево поиска, которое кроме ключей хранит в вершинах
+\emph{вес}. Для веса будет поддерживаться следующий инвариант: вес любой вершины
+меньше веса вершин левого и правого поддеревьев. То есть, "<тяжёлые"> вершины
+будут ниже "<лёгких">. На рисунке \ref{example} приведён пример такого дерева,
+чёрным цветом обозначены ключи, синим "--- веса.
+
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}[->,>=Stealth,every path/.style={draw=black,thick}]
+    \centering
+    \begin{scope}[every node/.style={circle,thick,draw},align=center]
+      \node (A7) at (0,0) {7, \color{blue}{1}};
+      \node (A3) at (-2,-1.5) {3, \color{blue}{2}};
+      \node (A9) at (2,-1.5) {9, \color{blue}{5}};
+      \node (A2) at (-3,-3) {2, \color{blue}{3}};
+      \node (A5) at (-1,-3) {5, \color{blue}{4}};
+      \node (A8) at (1,-3) {8, \color{blue}{9}};
+      \node (A1) at (-4,-4.5) {1, \color{blue}{6}};
+      \node (A4) at (-2,-4.5) {4, \color{blue}{8}};
+      \node (A6) at (0,-4.5) {6, \color{blue}{7}};
+    \end{scope}
+
+    \path [->]
+      (A7) edge (A3) edge (A9)
+      (A3) edge (A2) edge (A5)
+      (A9) edge (A8)
+      (A2) edge (A1)
+      (A5) edge (A4) edge (A6);
+  \end{tikzpicture}
+  \caption{Пример дерева с весами.}
+  \label{example}
+\end{figure}
+
+\section{\texorpdfstring{Единственность}{Task 1}}
+Пускай дано $n$ вершин $(x_i, y_i)$, $x_i$ "--- ключ вершины $i$, $y_i$ "--- вес
+вершины $i$, все ключи различны, все веса различны.
+Докажите, что существует единственное дерево, состоящее из этих вершин,
+удовлетворяющее описанным свойствам.
+
+\section{\texorpdfstring{Разрез}{Task 2}}
+Разрез "--- операция, которая получает на вход дерево и $x$, и возвращает два
+дерева. В первом дереве все ключи должны быть меньше $x$, во втором все ключи
+должны быть не меньше $x$.  Пример разреза дерева с рисунка \ref{example} по
+ключу $5$ приведён на рисунке \ref{split}.
+
+Предложите алгоритм разреза дерева по ключу. Какова сложность вашего алгоритма?
+
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}[->,>=Stealth,every path/.style={draw=black,thick}]
+    \centering
+    \begin{scope}[every node/.style={circle,thick,draw},align=center]
+      \node (A3) at (-4,0) {3, \color{blue}{2}};
+      \node (A2) at (-6,-1.5) {2, \color{blue}{3}};
+      \node (A1) at (-5,-3) {1, \color{blue}{6}};
+      \node (A6) at (-2,-1.5) {6, \color{blue}{7}};
+      \node (A4) at (-3,-3) {4, \color{blue}{8}};
+
+      \node (A7) at (3,0) {7, \color{blue}{1}};
+      \node (A5) at (1,-1.5) {5, \color{blue}{4}};
+      \node (A9) at (5,-1.5) {9, \color{blue}{5}};
+      \node (A8) at (4,-3) {8, \color{blue}{9}};
+    \end{scope}
+
+    \path [->]
+      (A7) edge (A5) edge (A9)
+      (A3) edge (A2) edge (A6)
+      (A9) edge (A8)
+      (A2) edge (A1)
+      (A6) edge (A4);
+  \end{tikzpicture}
+  \caption{Пример разреза дерева с рисунка \ref{example} по ключу $5$.}
+  \label{split}
+\end{figure}
+
+\section{\texorpdfstring{Слияние}{Task 3}}
+Слияние "--- операция, которая на вход получает два дерева, причём все ключи
+первого дерева меньше ключей второго дерева, и возвращает дерево, которое
+содержит в себе все вершины первого и второго деревьев. Например, слияние
+деревьев с рисунка \ref{split} даёт в результате дерево с рисунка \ref{example}.
+Деревья, для которых можно эффективно реализовать такую операцию, называют
+\emph{сливаемыми}.
+
+Предложите алгоритм слияния двух деревьев. Какова сложность вашего алгоритма?
+
+\section{\texorpdfstring{Вставка}{Task 4}}
+Предложите алгоритм вставки вершины с ключом $x$ и весом $y$ в дерево.
+Подсказка: воспользуйтесь предыдущими заданиями.
+Какова сложность вашего алгоритма?
+
+\section{\texorpdfstring{Удаление}{Task 5}}
+Предложите алгоритм удаления вершины с ключом $x$ из дерева.
+Какова сложность вашего алгоритма?
+
+\section{\texorpdfstring{Поиск}{Task 6}}
+Предложите алгоритм поиска вершины с ключом $x$ в дереве.
+Какова сложность вашего алгоритма?
+
+\section{\texorpdfstring{Реализация*}{Task 7}}
+Реализуйте такое дерево на вашем любимом языке программирования. В качестве
+весов берите случайные числа. Измерьте время работы операций для деревьев
+различных размеров. Опишите результаты измерений.
+
+\end{document}
