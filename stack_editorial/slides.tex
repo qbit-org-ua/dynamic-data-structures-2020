@@ -353,8 +353,6 @@ top = new_top;
   \vspace{1em}
   Очередь:
   \begin{minted}{C++}
-queue_node *head = NULL, *tail = NULL;
-int size_ = 0;
 queue_node *new_tail = new queue_node{value, NULL};
 if (tail != NULL) {
   tail->next = new_tail;
@@ -683,15 +681,54 @@ deque() {
 
 \subsection{Уменьшение массива}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Доказательство}
   Рассмотрим операции между двумя изменениями размера массива.
 
   \pause
-  Было $n$ с реальным размером массива $2n$, стало $\frac{n}{2}$ или $2n$.
+  $n$ элементов с реальным размером массива $2n$.
+  \begin{center}
+    \begin{tikzpicture} [
+        nodes in empty cells,
+        nodes={minimum width=0.8cm, minimum height=0.8cm},
+        row sep=-\pgflinewidth, column sep=-\pgflinewidth
+      ]
+      \matrix(vector)[
+          nodes in empty cells,
+          matrix of nodes,
+          nodes={draw,anchor=center}
+        ]
+        {
+          &
+          &
+          &
+          $\frac{n}{2}$ &
+          &
+          &
+          &
+          $n$ &
+          &
+          &
+          &
+          &
+          &
+          &
+          &
+          $2n$ \\
+        };
+    \end{tikzpicture}
+  \end{center}
 
   \pause
-  Потратили времени $\frac{n}{2} + \frac{n}{2} = n$ или $n+2n=3n$.
+  Рассмотрим только операции удаления или только операции добавления.
+
+  \begin{itemize}
+    \pause
+    \item Стало $\frac{n}{2}$. \pause
+      Потратили времени $\frac{n}{2} + \frac{n}{2} = n$
+    \pause
+    \item Стало $2n$. \pause Потратили времени $n+2n=3n$.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
