@@ -1,0 +1,702 @@
+\documentclass[pdf,russian,aspectratio=169]{beamer}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{booktabs}
+\usepackage{minted}
+\usepackage{tikz}
+
+\usetikzlibrary{matrix,chains,shapes}
+
+\selectlanguage{russian}
+
+\mode<presentation>{
+    \usetheme{CambridgeUS}
+    \useoutertheme{infolines}
+}
+
+\title{Разбор первых домашних заданий}
+\subtitle{очереди, деки, амортизационный анализ}
+\author{Артем Оганджанян}
+\institute{Q-Bit}
+\date{21 апреля 2020 г.}
+
+\begin{document}
+
+\AtBeginSection[]
+{
+   \begin{frame}
+       \frametitle{Оглавление}
+       \tableofcontents[currentsection]
+   \end{frame}
+}
+\AtBeginSubsection[]
+{
+   \begin{frame}
+       \frametitle{Оглавление}
+       \tableofcontents[currentsection,currentsubsection]
+   \end{frame}
+}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\section{Контест на dots}
+\subsection{Очередь на массиве}
+
+\begin{frame}[fragile]
+  \frametitle{Алгоритм}
+  \begin{center}
+\begin{tikzpicture} [nodes in empty cells,
+      nodes={minimum width=0.8cm, minimum height=0.8cm},
+      row sep=-\pgflinewidth, column sep=-\pgflinewidth]
+      border/.style={draw}
+    
+      \matrix(vector)[matrix of nodes,
+          row 1/.style={nodes={draw=none, minimum width=0.3cm, minimum height=0.2cm}},
+          row 3/.style={nodes={draw=none, minimum width=0.3cm, minimum height=0.2cm}},
+          nodes={draw}]
+      {
+          \tiny{head} \\
+          {\color{lightgray}$a_{0}$} &
+          {\color{lightgray}$a_{1}$} &
+          {\color{lightgray}$a_{2}$} &
+          {\color{lightgray}$a_{3}$} &
+          {\color{lightgray}$a_{4}$} &
+          {\color{lightgray}$a_{5}$} &
+          {\color{lightgray}$a_{6}$} &
+          {\color{lightgray}$a_{7}$} \\
+          \tiny{tail} \\
+      };
+\end{tikzpicture}
+\pause
+\begin{tikzpicture} [nodes in empty cells,
+      nodes={minimum width=0.8cm, minimum height=0.8cm},
+      row sep=-\pgflinewidth, column sep=-\pgflinewidth]
+      border/.style={draw}
+    
+      \matrix(vector)[matrix of nodes,
+          row 1/.style={nodes={draw=none, minimum width=0.3cm, minimum height=0.2cm}},
+          row 3/.style={nodes={draw=none, minimum width=0.3cm, minimum height=0.2cm}},
+          nodes={draw}]
+      {
+          \tiny{head} \\
+          $a_{0}$ &
+          $a_{1}$ &
+          $a_{2}$ &
+          $a_{3}$ &
+          {\color{lightgray}$a_{4}$} &
+          {\color{lightgray}$a_{5}$} &
+          {\color{lightgray}$a_{6}$} &
+          {\color{lightgray}$a_{7}$} \\
+          & & & & \tiny{tail} \\
+      };
+\end{tikzpicture}
+\pause
+\begin{tikzpicture} [nodes in empty cells,
+      nodes={minimum width=0.8cm, minimum height=0.8cm},
+      row sep=-\pgflinewidth, column sep=-\pgflinewidth]
+      border/.style={draw}
+    
+      \matrix(vector)[matrix of nodes,
+          row 1/.style={nodes={draw=none, minimum width=0.3cm, minimum height=0.2cm}},
+          row 3/.style={nodes={draw=none, minimum width=0.3cm, minimum height=0.2cm}},
+          nodes={draw}]
+      {
+          & & \tiny{head} \\
+          {\color{lightgray}$a_{0}$} &
+          {\color{lightgray}$a_{1}$} &
+          $a_{2}$ &
+          $a_{3}$ &
+          {\color{lightgray}$a_{4}$} &
+          {\color{lightgray}$a_{5}$} &
+          {\color{lightgray}$a_{6}$} &
+          {\color{lightgray}$a_{7}$} \\
+          & & & & \tiny{tail} \\
+      };
+\end{tikzpicture}
+\pause
+\begin{tikzpicture} [nodes in empty cells,
+      nodes={minimum width=0.8cm, minimum height=0.8cm},
+      row sep=-\pgflinewidth, column sep=-\pgflinewidth]
+      border/.style={draw}
+    
+      \matrix(vector)[matrix of nodes,
+          row 1/.style={nodes={draw=none, minimum width=0.3cm, minimum height=0.2cm}},
+          row 3/.style={nodes={draw=none, minimum width=0.3cm, minimum height=0.2cm}},
+          nodes={draw}]
+      {
+          & & & & & & \tiny{head} \\
+          $a_{0}$ &
+          {\color{lightgray}$a_{1}$} &
+          {\color{lightgray}$a_{2}$} &
+          {\color{lightgray}$a_{3}$} &
+          {\color{lightgray}$a_{4}$} &
+          {\color{lightgray}$a_{5}$} &
+          $a_{6}$ &
+          $a_{7}$ \\
+          & \tiny{tail} \\
+      };
+\end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Поля}
+  Стек:
+  \begin{minted}{C++}
+int capacity = DEFAULT_CAPACITY;
+int *stack = new int[capacity];
+int size_ = 0;
+  \end{minted}
+  \pause
+  \vspace{1em}
+  Очередь:
+  \begin{minted}{C++}
+int capacity = DEFAULT_CAPACITY;
+int *queue = new int[capacity];
+int head = 0, tail = 0;
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\mintinline{C++}{int size()}}
+  Стек:
+  \begin{minted}{C++}
+return size_;
+  \end{minted}
+  \pause
+  \vspace{1em}
+  Очередь:
+  \begin{minted}{C++}
+return (tail - head + capacity) % capacity;
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile,t]
+  \frametitle{\mintinline{C++}{void change_capacity(int new_capacity)}}
+  \begin{onlyenv}<1>
+    Стек:
+    \begin{minted}{C++}
+int *new_stack = new int[new_capacity];
+for (int i = 0; i < size_; ++i) {
+  new_stack[i] = stack[i];
+}
+delete[] stack;
+stack = new_stack;
+capacity = new_capacity;
+    \end{minted}
+  \end{onlyenv}
+  \begin{onlyenv}<2>
+    Очередь:
+    \begin{minted}{C++}
+int *new_queue = new int[new_capacity];
+if (tail >= head) {
+  for (int i = head; i < tail; ++i) {
+    new_queue[i - head] = queue[i];
+  }
+} else {
+  for (int i = head; i < capacity; ++i) {
+    new_queue[i - head] = queue[i];
+  }
+  for (int i = 0; i < tail; ++i) {
+    new_queue[capacity - head + i] = queue[i];
+  }
+}
+    \end{minted}
+  \end{onlyenv}
+  \begin{onlyenv}<3>
+    Очередь:
+    \begin{minted}{C++}
+tail = size();
+head = 0;
+delete[] queue;
+queue = new_queue;
+capacity = new_capacity;
+    \end{minted}
+  \end{onlyenv}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\mintinline{C++}{void push(int value)}}
+  Стек:
+  \begin{minted}{C++}
+ensure_capacity(size_ + 1);
+stack[size_++] = value;
+  \end{minted}
+  \pause
+  \vspace{1em}
+  Очередь:
+  \begin{minted}{C++}
+ensure_capacity(size() + 2);
+queue[tail] = value;
+tail = (tail + 1) % capacity;
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\mintinline{C++}{int pop()}}
+  Стек:
+  \begin{minted}{C++}
+int result = stack[--size_];
+ensure_capacity(size_);
+return result;
+  \end{minted}
+  \pause
+  \vspace{1em}
+  Очередь:
+  \begin{minted}{C++}
+int result = queue[head];
+head = (head + 1) % capacity;
+ensure_capacity(size());
+return result;
+  \end{minted}
+\end{frame}
+
+\subsection{Дек на массиве}
+
+\begin{frame}[fragile]
+  \frametitle{\mintinline{C++}{void push_front(int value)}}
+  \begin{minted}{C++}
+ensure_capacity(size() + 2);
+head = (head - 1 + capacity) % capacity;
+deque[head] = value;
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\mintinline{C++}{int pop_back()}}
+  \begin{minted}{C++}
+tail = (tail - 1 + capacity) % capacity;
+int result = deque[tail];
+ensure_capacity(size());
+return result;
+  \end{minted}
+\end{frame}
+
+\subsection{Очередь на списке}
+
+\begin{frame}[fragile]
+  \frametitle{Односвязный список}
+  \begin{center}
+    \begin{tikzpicture}[
+        every node/.style={
+          rectangle split,
+          rectangle split parts=2,
+          rectangle split horizontal,
+          minimum height=14pt
+        },
+        node distance=2em,
+        start chain,
+        every join/.style={->, shorten <=-4.5pt}
+      ]
+
+      \node[draw, on chain, join] { $a_0$ \nodepart{two} \phantom{$a_0$} };
+      \node[draw, on chain, join] { $a_1$ \nodepart{two} \phantom{$a_1$} };
+      \node[draw, on chain, join] { $a_2$ \nodepart{two} \phantom{$a_2$} };
+      \node[draw, on chain, join] { $a_3$ \nodepart{two} \phantom{$a_3$} };
+      \path[<-, draw, shorten >=10pt]
+        (chain-1.one north) |- node [at end] {head} ++(-1,0.7);
+      \path[<-, draw, shorten >=18pt]
+        (chain-4.one north) |- node [at end] {tail} ++(1.5,0.7);
+    \end{tikzpicture} 
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Узлы}
+  Стек:
+  \begin{minted}{C++}
+struct stack_node {
+  int element;
+  stack_node *prev;
+};
+  \end{minted}
+  \pause
+  \vspace{1em}
+  Очередь:
+  \begin{minted}{C++}
+struct queue_node {
+  int element;
+  queue_node *next;
+};
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Поля}
+  Стек:
+  \begin{minted}{C++}
+stack_node *top = NULL;
+int size_ = 0;
+  \end{minted}
+  \pause
+  \vspace{1em}
+  Очередь:
+  \begin{minted}{C++}
+queue_node *head = NULL, *tail = NULL;
+int size_ = 0;
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\mintinline{C++}{void push(int value)}}
+  Стек:
+  \begin{minted}{C++}
+stack_node *new_top = new stack_node{value, top};
+top = new_top;
+++size_;
+  \end{minted}
+  \pause
+  \vspace{1em}
+  Очередь:
+  \begin{minted}{C++}
+queue_node *head = NULL, *tail = NULL;
+int size_ = 0;
+queue_node *new_tail = new queue_node{value, NULL};
+if (tail != NULL) {
+  tail->next = new_tail;
+  tail = new_tail;
+} else {
+  head = tail = new_tail;
+}
+++size_;
+  \end{minted}
+\end{frame}
+
+\subsection{Дек на списке}
+
+\begin{frame}[fragile]
+  \frametitle{Двусвязный список}
+  \begin{center}
+    \begin{tikzpicture}[
+        every node/.style={
+          rectangle split,
+          rectangle split parts=3,
+          rectangle split horizontal,
+          minimum height=14pt
+        },
+        node distance=2em,
+        start chain,
+        every join/.style={<->, shorten <=-4.5pt, shorten >=-4.5pt}
+      ]
+
+      \node[draw, on chain, join] { \phantom{$a_0$} \nodepart{two} \phantom{$a_0$} \nodepart{three} \phantom{$a_0$} };
+      \node[draw, on chain, join] { \phantom{$a_1$} \nodepart{two} $a_0$ \nodepart{three} \phantom{$a_1$} };
+      \node[draw, on chain, join] { \phantom{$a_2$} \nodepart{two} $a_1$ \nodepart{three} \phantom{$a_2$} };
+      \node[draw, on chain, join] { \phantom{$a_3$} \nodepart{two} \phantom{$a_3$} \nodepart{three} \phantom{$a_3$} };
+      \path[<-, draw, shorten >=4pt]
+        (chain-1.two north) |- node [at end] {head} ++(-1,0.7);
+      \path[<-, draw, shorten >=24pt]
+        (chain-4.two north) |- node [at end] {tail} ++(1.5,0.7);
+    \end{tikzpicture} 
+  \end{center}
+  \pause
+  \vspace{1em}
+  \begin{center}
+    \begin{tikzpicture}[
+        every node/.style={
+          rectangle split,
+          rectangle split parts=3,
+          rectangle split horizontal,
+          minimum height=14pt
+        },
+        node distance=2em,
+        start chain,
+        every join/.style={<->, shorten <=-4.5pt, shorten >=-4.5pt}
+      ]
+
+      \node[draw, on chain, join] { \phantom{$a_0$} \nodepart{two} \phantom{$a_0$} \nodepart{three} \phantom{$a_0$} };
+      \node[draw, on chain, join] { \phantom{$a_3$} \nodepart{two} \phantom{$a_3$} \nodepart{three} \phantom{$a_3$} };
+      \path[<-, draw, shorten >=4pt]
+        (chain-1.two north) |- node [at end] {head} ++(-1,0.7);
+      \path[<-, draw, shorten >=24pt]
+        (chain-2.two north) |- node [at end] {tail} ++(1.5,0.7);
+    \end{tikzpicture} 
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Узлы}
+  \begin{minted}{C++}
+struct deque_node {
+  int element;
+  deque_node *next;
+  deque_node *prev;
+};
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Поля}
+  \begin{minted}{C++}
+deque_node *head = NULL, *tail = NULL;
+int size_ = 0;
+
+deque() {
+  head = new deque_node{0, NULL, NULL};
+  tail = new deque_node{0, NULL, NULL};
+  head->next = tail;
+  tail->prev = head;
+}
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\mintinline{C++}{void push(deque_node *next, int value)}}
+  \begin{minted}{C++}
+deque_node *node = new deque_node{value, next, next->prev};
+next->prev = node;
+node->prev->next = node;
+++size_;
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\mintinline{C++}{int pop(deque_node *node)}}
+  \begin{minted}{C++}
+auto [result, next, prev] = *node;
+delete node;
+next->prev = prev;
+prev->next = next;
+--size_;
+return result;
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\mintinline{C++}{push}}
+  \begin{minted}{C++}
+void push_front(int value) {
+  push(head->next, value);
+}
+
+void push_back(int value) {
+  push(tail, value);
+}
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\mintinline{C++}{pop}}
+  \begin{minted}{C++}
+int pop_front() {
+  return pop(head->next);
+}
+
+int pop_back() {
+  return pop(tail->prev);
+}
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\mintinline{C++}{front, back}}
+  \begin{minted}{C++}
+int front() {
+  return head->next->element;
+}
+
+int back() {
+  return tail->prev->element;
+}
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Бонус}
+  Список:
+  \begin{minted}{C++}
+deque_node *head = NULL, *tail = NULL;
+int size_ = 0;
+  \end{minted}
+  \pause
+  \vspace{1em}
+  Циклический список:
+  \begin{minted}{C++}
+deque_node *fake = NULL;
+int size_ = 0;
+deque() {
+  fake = new deque_node{0, NULL, NULL};
+  fake->next = fake;
+  fake->prev = fake;
+}
+  \end{minted}
+\end{frame}
+
+\section{Асимптотика вектора}
+\subsection{Увеличение массива}
+
+\begin{frame}[fragile,t]
+  \frametitle{Интуиция}
+
+  $\operatorname{capacity}=2$
+
+  \begin{onlyenv}<2-3>
+    \vspace{0.5em}
+    \begin{center}
+      \begin{tikzpicture} [
+          nodes in empty cells,
+          nodes={minimum width=0.8cm, minimum height=0.8cm},
+          row sep=-\pgflinewidth, column sep=-\pgflinewidth
+        ]
+        \matrix(vector)[
+            matrix of nodes,
+            row 1/.style={nodes={draw=none, minimum width=0.3cm, minimum height=0.2cm}},
+            nodes={draw}
+          ]
+          {
+            \tiny{1} & \tiny{1} & \tiny{2+1} \\
+            $1$ & $2$ & $3$ &
+            \phantom{$4$} & \phantom{$5$} & \phantom{$6$} & \phantom{$7$} &
+            \phantom{$8$} & \phantom{$9$} & \phantom{$10$} & \phantom{$11$} &
+            \phantom{$12$} & \phantom{$13$} & \phantom{$14$} & \phantom{$15$} &
+            \phantom{$16$} & \phantom{$17$} \\
+          };
+      \end{tikzpicture}
+    \end{center}
+    $n=3, \operatorname{time}=3+2=5$
+  \end{onlyenv}
+
+  \begin{onlyenv}<3>
+    \vspace{0.5em}
+    \begin{center}
+      \begin{tikzpicture} [
+          nodes in empty cells,
+          nodes={minimum width=0.8cm, minimum height=0.8cm},
+          row sep=-\pgflinewidth, column sep=-\pgflinewidth
+        ]
+        \matrix(vector)[
+            matrix of nodes,
+            row 1/.style={nodes={draw=none, minimum width=0.3cm, minimum height=0.2cm}},
+            nodes={draw}
+          ]
+          {
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{2+1} &
+            \tiny{1} &
+            \tiny{4+1} \\
+            $1$ & $2$ & $3$ & $4$ & $5$ & \phantom{$6$} &
+            \phantom{$7$} & \phantom{$8$} & \phantom{$9$} & \phantom{$10$} &
+            \phantom{$11$} & \phantom{$12$} & \phantom{$13$} & \phantom{$14$} &
+            \phantom{$15$} & \phantom{$16$} & \phantom{$17$} \\
+          };
+      \end{tikzpicture}
+    \end{center}
+    $n=5, \operatorname{time}=5+4+2=11$
+  \end{onlyenv}
+
+  \begin{onlyenv}<4-5>
+    \vspace{0.5em}
+    \begin{center}
+      \begin{tikzpicture} [
+          nodes in empty cells,
+          nodes={minimum width=0.8cm, minimum height=0.8cm},
+          row sep=-\pgflinewidth, column sep=-\pgflinewidth
+        ]
+        \matrix(vector)[
+            matrix of nodes,
+            row 1/.style={nodes={draw=none, minimum width=0.3cm, minimum height=0.2cm}},
+            nodes={draw}
+          ]
+          {
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{2+1} &
+            \tiny{1} &
+            \tiny{4+1} &
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{8+1} \\
+            $1$ & $2$ & $3$ & $4$ & $5$ & $6$ & $7$ & $8$ &
+            $9$ & \phantom{$10$} &
+            \phantom{$11$} & \phantom{$12$} & \phantom{$13$} & \phantom{$14$} &
+            \phantom{$15$} & \phantom{$16$} & \phantom{$17$} \\
+          };
+      \end{tikzpicture}
+    \end{center}
+    $n=9, \operatorname{time}=9+8+4+2=23$
+  \end{onlyenv}
+
+  \begin{onlyenv}<5>
+    \vspace{0.5em}
+    \begin{center}
+      \begin{tikzpicture} [
+          nodes in empty cells,
+          nodes={minimum width=0.8cm, minimum height=0.8cm},
+          row sep=-\pgflinewidth, column sep=-\pgflinewidth
+        ]
+        \matrix(vector)[
+            matrix of nodes,
+            row 1/.style={nodes={draw=none, minimum width=0.3cm, minimum height=0.2cm}},
+            nodes={draw}
+          ]
+          {
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{2+1} &
+            \tiny{1} &
+            \tiny{4+1} &
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{8+1} &
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{1} &
+            \tiny{16+1} \\
+            $1$ & $2$ & $3$ & $4$ & $5$ & $6$ & $7$ & $8$ &
+            $9$ & $10$ & $11$ & $12$ & $13$ & $14$ & $15$ & $16$ & $17$ \\
+          };
+      \end{tikzpicture}
+    \end{center}
+    $n=17, \operatorname{time}=17+16+8+4+2=47$
+  \end{onlyenv}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Формула}
+  \[
+    n = 2^k + 1
+  \]
+  \pause
+  \[
+    S_n=\sum_{i=1}^n b_i = \frac{b_1(q^n-1)}{q-1}
+  \]
+  \pause
+  \begin{align*}
+    \operatorname{time}(n) &= n + \sum_{i=1}^k 2^i\\
+    &= n + 2(2^k-1)\\
+    &=n+2(n-2)\\
+    &=3n-4\\
+    &=O(n)
+  \end{align*}
+\end{frame}
+
+\subsection{Уменьшение массива}
+
+\begin{frame}
+  \frametitle{Доказательство}
+  Рассмотрим операции между двумя изменениями размера массива.
+
+  \pause
+  Было $n$ с реальным размером массива $2n$, стало $\frac{n}{2}$ или $2n$.
+
+  \pause
+  Потратили времени $\frac{n}{2} + \frac{n}{2} = n$ или $n+2n=3n$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Конец!}
+  Вопросы?
+\end{frame}
+
+\end{document}
