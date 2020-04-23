@@ -6,32 +6,22 @@ struct tree_node {
   int key;
   tree_node *left;
   tree_node *right;
-
-  void delete_node() {
-    if (left != NULL) {
-      left->delete_node();
-      delete left;
-    }
-    if (right != NULL) {
-      right->delete_node();
-      delete right;
-    }
-  }
 };
 
-
-
 struct tree {
-
   tree_node *head = NULL;
 
   void delete_tree() {
-    if (head != NULL) {
-      head->delete_node();
-      delete head;
-    }
+    delete_node(head);
   }
 
+  void delete_node(tree_node *node) {
+    if (node != NULL) {
+      delete_node(node->left);
+      delete_node(node->right);
+      delete node;
+    }
+  }
 
   void add_key(int key) {
     if (head == NULL) {

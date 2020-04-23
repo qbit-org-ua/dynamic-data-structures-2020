@@ -8,19 +8,6 @@ struct tree_node {
   tree_node *left; // в левом поддереве все ключи должны быть меньше key
   tree_node *right; // в правом поддереве все ключи должны быть больше key
 
-  // метод для очистки памяти
-  // рекурсивно удаляем левое и правое поддеревья,
-  // нас удалит наш родитель, или delete_tree, если мы - корень
-  void delete_node() {
-    if (left != NULL) {
-      left->delete_node();
-      delete left;
-    }
-    if (right != NULL) {
-      right->delete_node();
-      delete right;
-    }
-  }
 };
 
 // структура, хранящая указатель на вершину дерева,
@@ -30,9 +17,17 @@ struct tree {
   tree_node *head = NULL;
 
   void delete_tree() {
-    if (head != NULL) {
-      head->delete_node();
-      delete head;
+    delete_node(head);
+  }
+
+  // метод для очистки памяти
+  // рекурсивно удаляем левое и правое поддеревья,
+  // и потом удаляем node.
+  void delete_node(tree_node *node) {
+    if (node != NULL) {
+      delete_node(node->left);
+      delete_node(node->right);
+      delete node;
     }
   }
 
